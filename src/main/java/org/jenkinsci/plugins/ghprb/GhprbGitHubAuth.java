@@ -60,6 +60,8 @@ public class GhprbGitHubAuth extends AbstractDescribableImpl<GhprbGitHubAuth> {
 
     private static final int INITIAL_CAPACITY = 3;
 
+    private static final long TTL_EXPIRE = 59 * 60 * 1000;
+
     private final String serverAPIUrl;
 
     private final String jenkinsUrl;
@@ -67,6 +69,8 @@ public class GhprbGitHubAuth extends AbstractDescribableImpl<GhprbGitHubAuth> {
     private final String credentialsId;
 
     private final String id;
+
+    private final long ttl;
 
     private final String description;
 
@@ -96,6 +100,7 @@ public class GhprbGitHubAuth extends AbstractDescribableImpl<GhprbGitHubAuth> {
         this.id = IdCredentials.Helpers.fixEmptyId(id);
         this.description = description;
         this.secret = secret;
+        this.ttl = System.currentTimeMillis();
     }
 
     @Exported
@@ -129,6 +134,9 @@ public class GhprbGitHubAuth extends AbstractDescribableImpl<GhprbGitHubAuth> {
         return secret;
     }
 
+    public boolean expired() {
+        return System.currentTimeMillis() > (ttl + TTL_EXPIRE);
+    }
 
     public boolean checkSignature(String body, String signature) {
         if (secret == null || StringUtils.isEmpty(secret.getPlainText())) {
@@ -215,10 +223,9 @@ public class GhprbGitHubAuth extends AbstractDescribableImpl<GhprbGitHubAuth> {
 
     public GitHub getConnection(Item context) throws IOException {
         synchronized (this) {
-            if (gh == null) {
+            if (gh == null || expired()) {
                 buildConnection(context);
             }
-
             return gh;
         }
     }

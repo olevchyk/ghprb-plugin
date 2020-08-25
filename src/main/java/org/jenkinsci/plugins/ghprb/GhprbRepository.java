@@ -82,10 +82,9 @@ public class GhprbRepository implements Saveable {
     }
 
     private boolean initGhRepository() {
-        if (ghRepository != null) {
+        if (ghRepository != null && !trigger.authExpired()) {
             return true;
         }
-
         GitHub gitHub = null;
 
         try {
@@ -412,6 +411,9 @@ public class GhprbRepository implements Saveable {
     public GHRepository getGitHubRepo() {
         if (ghRepository == null && !initGhRepository()) {
             LOGGER.log(Level.SEVERE, "Unable to get repository [ {0} ]", reponame);
+        }
+        if (trigger.authExpired()) {
+            initGhRepository();
         }
         return ghRepository;
     }

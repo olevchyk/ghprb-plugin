@@ -508,6 +508,10 @@ public class GhprbTrigger extends GhprbTriggerBackwardsCompatible {
         return getDescriptor().getGitHubAuth(gitHubAuthId);
     }
 
+    public boolean authExpired() {
+       return getGitHubApiAuth().expired();
+    }
+
     public GitHub getGitHub() throws IOException {
         GhprbGitHubAuth auth = getGitHubApiAuth();
         return auth.getConnection(getActualProject());
